@@ -36,5 +36,3 @@ staticfields/
 # Local settings (if not handled by environment variables)
 local_settings.py
 bin/
-.github/
-entr.sh

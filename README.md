@@ -22,6 +22,11 @@
 ![Интерфейс администратора](images/admin_2.png)
 
 
+### Запуск на Pythonanywhere
+Ссылка на Pythonanywhere: https://bonik0.pythonanywhere.com/
+Для запуска на Pythonanywhere используется workflow.yml в .github/workflows
+
+
 ### Локальный запуск проекта
 
 ```bash
@@ -45,7 +50,3 @@ docker-compose exec django python3 src/manage.py createsuperuser
 - Выполните команду:
 ```bash
 docker-compose exec django python3 src/manage.py load_place /code/src/places/<file_name>.json
-```
-
-### Запуск на Pythonanywhere
-Для запуска на Pythonanywhere используется workflow.yml в .github/workflows
