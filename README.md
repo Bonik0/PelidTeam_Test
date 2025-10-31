@@ -24,6 +24,7 @@
 
 ### Запуск на Pythonanywhere
 Ссылка на Pythonanywhere: https://bonik0.pythonanywhere.com/
+
 Для запуска на Pythonanywhere используется workflow.yml в .github/workflows
 
 
