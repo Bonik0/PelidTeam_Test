@@ -25,6 +25,7 @@ jobs:
   deploy:
     needs: lint
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     steps:
       - name: install json parser
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -34,7 +35,7 @@ jobs:
           PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
           PYTHONANYWHERE_PROJECT_PATH: ${{ secrets.PYTHONANYWHERE_PROJECT_PATH }}
         run: |
-          deploy_script="echo \\\"===Start===\\\" && cd /home/$PYTHONANYWHERE_USER/$PYTHONANYWHERE_PROJECT_PATH && git pull origin develop && pip install -r requirements.txt && python3 src/manage.py makemigrations && python3 src/manage.py migrate && python3 src/manage.py collectstatic --noinput && find ./src/places -type f -exec python3 src/manage.py load_place {} \\\\; && echo \\\"===End===\\\""
+          deploy_script="echo \\\"===Start===\\\" && cd /home/$PYTHONANYWHERE_USER/$PYTHONANYWHERE_PROJECT_PATH && git pull origin main && pip install -r requirements.txt && python3 src/manage.py makemigrations && python3 src/manage.py migrate && python3 src/manage.py collectstatic --noinput && find ./src/places -type f -exec python3 src/manage.py load_place {} \\\\; && echo \\\"===End===\\\""
 
           get_console() {
               curl -s -X GET \
@@ -80,9 +81,3 @@ jobs:
           reload_rsponse=$(reload_webapp)
           echo "Deployment completed"
           echo "$reload_rsponse"
-
-
-
-
-
-        
