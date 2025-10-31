@@ -1,0 +1,88 @@
+name: CI/CD
+on: 
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: setup python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    - name: install flake8
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install flake8
+        pip install flake8-quotes 
+    - name: run flake8
+      run: flake8 src --inline-quotes '"' --max-line-length 92 --ignore F401
+    
+  deploy:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: install json parser
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - env:
+          PYTHONANYWHERE_USER: ${{ secrets.PYTHONANYWHERE_USER }}
+          PYTHONANYWHERE_TOKEN: ${{ secrets.PYTHONANYWHERE_TOKEN }}
+          PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_DOMAIN }}
+          PYTHONANYWHERE_PROJECT_PATH: ${{ secrets.PYTHONANYWHERE_PROJECT_PATH }}
+        run: |
+          deploy_script="echo \\\"===Start===\\\" && cd /home/$PYTHONANYWHERE_USER/$PYTHONANYWHERE_PROJECT_PATH && git pull origin develop && pip install -r requirements.txt && python3 src/manage.py makemigrations && python3 src/manage.py migrate && python3 src/manage.py collectstatic --noinput && find ./src/places -type f -exec python3 src/manage.py load_place {} \\\\; && echo \\\"===End===\\\""
+
+          get_console() {
+              curl -s -X GET \
+                  "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USER/consoles/" \
+                  -H "Authorization: Token $PYTHONANYWHERE_TOKEN" \
+                  -H "Content-Type: application/json" 
+          }
+
+          send_command() {
+              local console_id=$1
+              curl -s -X POST \
+                  "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USER/consoles/$console_id/send_input/" \
+                  -H "Authorization: Token $PYTHONANYWHERE_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"input\": \"$deploy_script\\n\"}"
+          }
+
+          reload_webapp() {
+              curl -s -X POST \
+                  "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USER/webapps/$PYTHONANYWHERE_DOMAIN/reload/" \
+                  -H "Authorization: Token $PYTHONANYWHERE_TOKEN"
+          }
+
+
+          echo "Get console"
+          console_response=$(get_console)
+          console_id=$(echo "$console_response" | jq -r '.[0].id // null')
+
+          echo "Console id: $console_id"
+
+          if [ "$console_id" = "null" ]; then
+              echo "Failed to find console; Create console in pythonanywhere"
+              exit 1
+          fi
+
+          echo "Send deploy script"
+          send_command_response=$(send_command $console_id)
+          echo "$send_command_response"
+
+          echo "Waiting for deployment to complete"
+          sleep 180
+          echo "Reloading webapp"
+          reload_rsponse=$(reload_webapp)
+          echo "Deployment completed"
+          echo "$reload_rsponse"
+
+
+
+
+
+        

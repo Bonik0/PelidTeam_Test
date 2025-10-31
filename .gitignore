@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / compressed files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg
+*.egg-info/
+.eggs/
+
+# Virtual environment
+venv/
+.env
+env/
+
+
+# Media files
+media/
+
+# Static files (if collected locally for development)
+staticfields/
+
+# Logs
+*.log
+
+# IDE-specific files (e.g., PyCharm, VS Code)
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# Django-specific temporary files
+*.pot
+*.mo
+
+# Local settings (if not handled by environment variables)
+local_settings.py
+bin/
